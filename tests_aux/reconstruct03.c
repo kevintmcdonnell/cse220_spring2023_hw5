@@ -14,13 +14,13 @@ int main() {
     };
     unsigned int packets_len = 8;
     unsigned int message_len = 120;  
-    char *message = malloc(message_len*sizeof(char));
+    char *message_act = malloc(message_len*sizeof(char));
 
     // fill memory with "random" garbage
     for (unsigned int i = 0; i < message_len; i++)
-        message[i] = '@';
+        message_act[i] = '@';
 
-    reconstruct_sf((unsigned char **)packets, packets_len, message, message_len);
-    free(message);
+    reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
+    free(message_act);
     return 0;
 }
