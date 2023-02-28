@@ -69,9 +69,9 @@ void print_char_array(char *chars, int chars_len) {
     }
 }
 
-TestSuite(base_output, .timeout=TEST_TIMEOUT);
-TestSuite(base_return, .timeout=TEST_TIMEOUT);
-TestSuite(base_valgrind, .timeout=TEST_TIMEOUT);
+TestSuite(base_output, .timeout=TEST_TIMEOUT, .disabled=false);
+TestSuite(base_return, .timeout=TEST_TIMEOUT, .disabled=false);
+TestSuite(base_valgrind, .timeout=TEST_TIMEOUT, .disabled=false);
 
 Test(base_output, print_packet01, .description="Print the contents of a packet") {
     char *test_name = "print_packet01";
@@ -102,12 +102,11 @@ Test(base_output, reconstruct01, .description="Function given more than enough m
     };
     unsigned int packets_len = 8;
     unsigned int message_len = 120; // original message has 91 characters
-    int extra_bytes = 4;
-    char *message_act = malloc(message_len*sizeof(char)+extra_bytes);
+    char *message_act = malloc(message_len*sizeof(char));
 
     // fill memory with "random" garbage
     srand(2513);
-    for (unsigned int i = 0; i < message_len+extra_bytes; i++)
+    for (unsigned int i = 0; i < message_len; i++)
         message_act[i] = (char)(rand() % 200 + 33);
 
     reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
@@ -129,12 +128,11 @@ Test(base_return, reconstruct01, .description="Function given more than enough m
     };
     unsigned int packets_len = 8;
     unsigned int message_len = 120; // original message has 91 characters
-    int extra_bytes = 4;
-    char *message_act = malloc(message_len*sizeof(char)+extra_bytes);
+    char *message_act = malloc(message_len*sizeof(char));
 
     // fill memory with "random" garbage
     srand(2513);
-    for (unsigned int i = 0; i < message_len+extra_bytes; i++)
+    for (unsigned int i = 0; i < message_len; i++)
         message_act[i] = (char)(rand() % 200 + 33);
 
     unsigned int num_packets_act = reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
@@ -159,12 +157,11 @@ Test(base_output, reconstruct02, .description="Function not given enough memory 
     };
     unsigned int packets_len = 8;
     unsigned int message_len = 60;  // original message has 91 characters
-    int extra_bytes = 4;
-    char *message_act = malloc(message_len*sizeof(char)+extra_bytes);
+    char *message_act = malloc(message_len*sizeof(char));
 
     // fill memory with "random" garbage
     srand(444);
-    for (unsigned int i = 0; i < message_len+extra_bytes; i++)
+    for (unsigned int i = 0; i < message_len; i++)
         message_act[i] = (char)(rand() % 200 + 33);
 
     reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
@@ -186,12 +183,11 @@ Test(base_return, reconstruct02, .description="Function not given enough memory 
     };
     unsigned int packets_len = 8;
     unsigned int message_len = 60;  // original message has 91 characters
-    int extra_bytes = 4;
-    char *message_act = malloc(message_len*sizeof(char)+extra_bytes);
+    char *message_act = malloc(message_len*sizeof(char));
 
     // fill memory with "random" garbage
     srand(444);
-    for (unsigned int i = 0; i < message_len+extra_bytes; i++)
+    for (unsigned int i = 0; i < message_len; i++)
         message_act[i] = (char)(rand() % 200 + 33);
 
     unsigned int num_packets_act = reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
@@ -216,13 +212,11 @@ Test(base_output, reconstruct03, .description="Function given more memory than n
     };
     unsigned int packets_len = 8;
     unsigned int message_len = 120;  // original message has 91 characters
-    int extra_bytes = 4;
-    char *message_act = malloc(message_len*sizeof(char)+extra_bytes);
+    char *message_act = malloc(message_len*sizeof(char));
 
     // fill memory with "random" garbage
-    srand(777);
-    for (unsigned int i = 0; i < message_len+extra_bytes; i++)
-        message_act[i] = (char)(rand() % 200 + 33);
+    for (unsigned int i = 0; i < message_len; i++)
+        message_act[i] = '@';
 
     reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
     char *message_exp = "@@@@@@@@@@@@o ways to wr@@@@@@@@@@@@ee programs; only the third one work@@@@@@@@@@@@ Perlis";
@@ -243,13 +237,11 @@ Test(base_return, reconstruct03, .description="Function given more memory than n
     };
     unsigned int packets_len = 8;
     unsigned int message_len = 120;  // original message has 91 characters
-    int extra_bytes = 4;
-    char *message_act = malloc(message_len*sizeof(char)+extra_bytes);
+    char *message_act = malloc(message_len*sizeof(char));
 
     // fill memory with "random" garbage
-    srand(777);
-    for (unsigned int i = 0; i < message_len+extra_bytes; i++)
-        message_act[i] = (char)(rand() % 200 + 33);
+    for (unsigned int i = 0; i < message_len; i++)
+        message_act[i] = '@';
 
     unsigned int num_packets_act = reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
     unsigned int num_packets_exp = 5;
@@ -336,3 +328,4 @@ Test(base_return, packetize02, .description="Packetize a message that is too lar
 Test(base_valgrind, packetize02_valgrind) {
     expect_no_valgrind_errors(run_using_system("packetize02"));
 }
+
