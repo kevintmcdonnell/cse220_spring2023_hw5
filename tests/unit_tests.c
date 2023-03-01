@@ -69,9 +69,9 @@ void print_char_array(char *chars, int chars_len) {
     }
 }
 
-TestSuite(base_output, .timeout=TEST_TIMEOUT, .disabled=false);
-TestSuite(base_return, .timeout=TEST_TIMEOUT, .disabled=false);
-TestSuite(base_valgrind, .timeout=TEST_TIMEOUT, .disabled=false);
+TestSuite(base_output, .timeout=TEST_TIMEOUT);
+TestSuite(base_return, .timeout=TEST_TIMEOUT);
+TestSuite(base_valgrind, .timeout=TEST_TIMEOUT);
 
 Test(base_output, print_packet01, .description="Print the contents of a packet") {
     char *test_name = "print_packet01";
@@ -107,7 +107,7 @@ Test(base_output, reconstruct01, .description="Function given more than enough m
     // fill memory with "random" garbage
     srand(2513);
     for (unsigned int i = 0; i < message_len; i++)
-        message_act[i] = (char)(rand() % 200 + 33);
+        message_act[i] = (char)(rand() % 90 + 33);
 
     reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
     char *message_exp = "There are two ways to write error-free programs; only the third one works. - Alan J. Perlis";
@@ -133,7 +133,7 @@ Test(base_return, reconstruct01, .description="Function given more than enough m
     // fill memory with "random" garbage
     srand(2513);
     for (unsigned int i = 0; i < message_len; i++)
-        message_act[i] = (char)(rand() % 200 + 33);
+        message_act[i] = (char)(rand() % 90 + 33);
 
     unsigned int num_packets_act = reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
     unsigned int num_packets_exp = 8;
@@ -162,7 +162,7 @@ Test(base_output, reconstruct02, .description="Function not given enough memory 
     // fill memory with "random" garbage
     srand(444);
     for (unsigned int i = 0; i < message_len; i++)
-        message_act[i] = (char)(rand() % 200 + 33);
+        message_act[i] = (char)(rand() % 90 + 33);
 
     reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
     char *message_exp = "There are two ways to write error-free programs; only the t";
@@ -188,7 +188,7 @@ Test(base_return, reconstruct02, .description="Function not given enough memory 
     // fill memory with "random" garbage
     srand(444);
     for (unsigned int i = 0; i < message_len; i++)
-        message_act[i] = (char)(rand() % 200 + 33);
+        message_act[i] = (char)(rand() % 90 + 33);
 
     unsigned int num_packets_act = reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
     unsigned int num_packets_exp = 5;
@@ -328,4 +328,3 @@ Test(base_return, packetize02, .description="Packetize a message that is too lar
 Test(base_valgrind, packetize02_valgrind) {
     expect_no_valgrind_errors(run_using_system("packetize02"));
 }
-
