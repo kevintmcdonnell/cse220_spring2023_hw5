@@ -61,9 +61,9 @@ void expect_no_valgrind_errors(int status) {
 }
 
 void report_message(char *actual, char *expected) {
-    for (size_t i = 0; i < strlen(actual); i++) 
-        if (actual[i] == '"' || actual[i] < 32 || actual[i] > 126)
-            actual[i] = '?';
+    // for (size_t i = 0; i < strlen(actual); i++) 
+    //     if (actual[i] == '"' || actual[i] < 32 || actual[i] > 126)
+    //         actual[i] = '?';
     cr_expect_arr_eq(actual, expected, strlen(expected)+1,
             "Contents of message incorrect.\nActual:   %s\nExpected: %s", actual, expected);
 }
