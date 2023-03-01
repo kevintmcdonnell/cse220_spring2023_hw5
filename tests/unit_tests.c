@@ -60,13 +60,23 @@ void expect_no_valgrind_errors(int status) {
     }
 }
 
-void print_char_array(char *chars, int chars_len) {
-    for (int i = 0; i < chars_len; i++) {
-        if(isprint(chars[i]))
-            printf("%c", chars[i]);
-        else
-            printf("\\x%02x", chars[i]);
+void report_message(char *actual, char *expected) {
+    for (size_t i = 0; i < strlen(actual); i++) 
+        if (actual[i] == '"' || actual[i] < 32 || actual[i] > 126)
+            actual[i] = '?';
+    cr_expect_arr_eq(actual, expected, strlen(expected)+1,
+            "Contents of message incorrect.\nActual:   %s\nExpected: %s", actual, expected);
+}
+
+void report_packets(unsigned char *actual[], char *expected[], unsigned int *packet_lens_exp, unsigned int num_expected) {
+    for (unsigned int i = 0; i < num_expected; i++) {
+        cr_expect_arr_eq(actual[i], expected[i], packet_lens_exp[i], 
+            "Contents of packet #%d incorrect. See unit_tests.c for expected packet contents.", i);
     }
+}
+
+void report_return_value(int return_act, int return_exp) {
+    cr_expect_eq(return_act, return_exp, "Return value was %d, but it should have been %d.\n", return_act, return_exp);
 }
 
 TestSuite(base_output, .timeout=TEST_TIMEOUT);
@@ -86,7 +96,7 @@ Test(base_return, checksum01, .description="Compute a checksum") {
     unsigned char packet[] = "\x00\x00\x00\x30\x39\x00\x00\x01\x09\x3b\x20\x40\x00\x00\x00\x10\x00\x00\x00\x1d\x00\xa5\x25\x17\x41\x42\x43\x44\x45RANDOM GARBAGE YOU SHOULD NOT SEE THIS";
     unsigned int actual = checksum_sf(packet);
     unsigned int expected = 0x149f1;
-    cr_expect_eq(actual, expected, "The return value was 0x%x, but it should have been 0x%x.\n", actual, expected);
+    report_return_value(actual, expected);
 }
 
 Test(base_output, reconstruct01, .description="Function given more than enough memory to reconstruct the message.") {
@@ -111,8 +121,7 @@ Test(base_output, reconstruct01, .description="Function given more than enough m
 
     reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
     char *message_exp = "There are two ways to write error-free programs; only the third one works. - Alan J. Perlis";
-    cr_expect_arr_eq(message_act, message_exp, strlen(message_exp)+1,
-            "Contents of message incorrect.\nActual:   %s\nExpected: %s", message_act, message_exp);
+    report_message(message_act, message_exp);
     free(message_act);
 }
 Test(base_return, reconstruct01, .description="Function given more than enough memory to reconstruct the message.") {
@@ -137,7 +146,7 @@ Test(base_return, reconstruct01, .description="Function given more than enough m
 
     unsigned int num_packets_act = reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
     unsigned int num_packets_exp = 8;
-    cr_expect_eq(num_packets_act, num_packets_exp, "The return value was %d, but it should have been %d.\n", num_packets_act, num_packets_exp);
+    report_return_value(num_packets_act, num_packets_exp);
     free(message_act);
 }
 Test(base_valgrind, reconstruct01_valgrind) {
@@ -166,8 +175,7 @@ Test(base_output, reconstruct02, .description="Function not given enough memory 
 
     reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
     char *message_exp = "There are two ways to write error-free programs; only the t";
-    cr_expect_arr_eq(message_act, message_exp, strlen(message_exp)+1,
-            "Contents of message incorrect.\nActual:   %s\nExpected: %s", message_act, message_exp);
+    report_message(message_act, message_exp);
     free(message_act);
 }
 Test(base_return, reconstruct02, .description="Function not given enough memory to reconstruct the message.") {
@@ -192,7 +200,7 @@ Test(base_return, reconstruct02, .description="Function not given enough memory 
 
     unsigned int num_packets_act = reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
     unsigned int num_packets_exp = 5;
-    cr_expect_eq(num_packets_act, num_packets_exp, "The return value was %d, but it should have been %d.\n", num_packets_act, num_packets_exp);
+    report_return_value(num_packets_act, num_packets_exp);
     free(message_act);
 }
 Test(base_valgrind, reconstruct02_valgrind) {
@@ -220,8 +228,7 @@ Test(base_output, reconstruct03, .description="Function given more memory than n
 
     reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
     char *message_exp = "@@@@@@@@@@@@o ways to wr@@@@@@@@@@@@ee programs; only the third one work@@@@@@@@@@@@ Perlis";
-    cr_expect_arr_eq(message_act, message_exp, strlen(message_exp)+1,
-            "Contents of message incorrect.\nActual:   %s\nExpected: %s", message_act, message_exp);
+    report_message(message_act, message_exp);
     free(message_act);
 }
 Test(base_return, reconstruct03, .description="Function given more memory than needed, but some packets are corrupted.") {
@@ -245,7 +252,7 @@ Test(base_return, reconstruct03, .description="Function given more memory than n
 
     unsigned int num_packets_act = reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
     unsigned int num_packets_exp = 5;
-    cr_expect_eq(num_packets_act, num_packets_exp, "The return value was %d, but it should have been %d.\n", num_packets_act, num_packets_exp);
+    report_return_value(num_packets_act, num_packets_exp);
     free(message_act);
 }
 Test(base_valgrind, reconstruct03_valgrind) {
@@ -269,10 +276,7 @@ Test(base_output, packetize01, .description="Packetize a short message. packets[
     unsigned int packet_lens_exp[] = {29, 29, 26};
     packetize_sf(msg, packets_act, packets_len, max_payload, src_addr, dest_addr, encryption);
     unsigned int num_packets_exp = 3;
-    for (unsigned int i = 0; i < num_packets_exp; i++) {
-        cr_expect_arr_eq(packets_act[i], packets_exp[i], packet_lens_exp[i], 
-            "Contents of packet #%d incorrect. See unit_tests.c for expected packet contents.", i);
-    }
+    report_packets(packets_act, packets_exp, packet_lens_exp, num_packets_exp);
 }
 Test(base_return, packetize01, .description="Packetize a short message. packets[] is the optimal length.") {
     char msg[] = "ABCDEFGHIJKL";
@@ -284,7 +288,7 @@ Test(base_return, packetize01, .description="Packetize a short message. packets[
     unsigned short encryption = 4096;
     unsigned int num_packets_act = packetize_sf(msg, packets_act, packets_len, max_payload, src_addr, dest_addr, encryption);
     unsigned int num_packets_exp = 3;
-    cr_expect_eq(num_packets_act, num_packets_exp, "The return value was %d, but it should have been %d.\n", num_packets_act, num_packets_exp);
+    report_return_value(num_packets_act, num_packets_exp);
 }
 Test(base_valgrind, packetize01_valgrind) {
     expect_no_valgrind_errors(run_using_system("packetize01"));
@@ -308,10 +312,7 @@ Test(base_output, packetize02, .description="Packetize a message that is too lar
     unsigned int packet_lens_exp[] = {41, 41, 41, 41};
     packetize_sf(msg, packets_act, packets_len, max_payload, src_addr, dest_addr, encryption);
     unsigned int num_packets_exp = 4;
-    for (unsigned int i = 0; i < num_packets_exp; i++) {
-        cr_expect_arr_eq(packets_act[i], packets_exp[i], packet_lens_exp[i], 
-            "Contents of packet #%d incorrect. See unit_tests.c for expected packet contents.", i);
-    }
+    report_packets(packets_act, packets_exp, packet_lens_exp, num_packets_exp);
 }
 Test(base_return, packetize02, .description="Packetize a message that is too large to completely packetize.") {
     char msg[] = "The sight of a dozen patients sitting in the waiting room, each wearing a pained expression, did nothing to lift Harry's mood.";
@@ -323,7 +324,7 @@ Test(base_return, packetize02, .description="Packetize a message that is too lar
     unsigned short encryption = 265;
     unsigned int num_packets_act = packetize_sf(msg, packets_act, packets_len, max_payload, src_addr, dest_addr, encryption);
     unsigned int num_packets_exp = 4;
-    cr_expect_eq(num_packets_act, num_packets_exp, "The return value was %d, but it should have been %d.\n", num_packets_act, num_packets_exp);
+    report_return_value(num_packets_act, num_packets_exp);
 }
 Test(base_valgrind, packetize02_valgrind) {
     expect_no_valgrind_errors(run_using_system("packetize02"));
