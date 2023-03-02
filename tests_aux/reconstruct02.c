@@ -19,7 +19,7 @@ int main() {
     // fill memory with "random" garbage
     srand(444);
     for (unsigned int i = 0; i < message_len; i++)
-        message_act[i] = (char)(rand() % 200 + 33);
+        message_act[i] = (char)(rand() % 200 + 35);
 
     reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
     free(message_act);

@@ -61,10 +61,7 @@ void expect_no_valgrind_errors(int status) {
 }
 
 void report_message(char *actual, char *expected) {
-    // for (size_t i = 0; i < strlen(actual); i++) 
-    //     if (actual[i] == '"' || actual[i] < 32 || actual[i] > 126)
-    //         actual[i] = '?';
-    cr_expect_arr_eq(actual, expected, strlen(expected)+1,
+cr_expect_arr_eq(actual, expected, strlen(expected)+1,
             "Contents of message incorrect.\nActual:   %s\nExpected: %s", actual, expected);
 }
 
@@ -117,7 +114,7 @@ Test(base_output, reconstruct01, .description="Function given more than enough m
     // fill memory with "random" garbage
     srand(2513);
     for (unsigned int i = 0; i < message_len; i++)
-        message_act[i] = (char)(rand() % 90 + 33);
+        message_act[i] = (char)(rand() % 90 + 35);
 
     reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
     char *message_exp = "There are two ways to write error-free programs; only the third one works. - Alan J. Perlis";
@@ -142,7 +139,7 @@ Test(base_return, reconstruct01, .description="Function given more than enough m
     // fill memory with "random" garbage
     srand(2513);
     for (unsigned int i = 0; i < message_len; i++)
-        message_act[i] = (char)(rand() % 90 + 33);
+        message_act[i] = (char)(rand() % 90 + 35);
 
     unsigned int num_packets_act = reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
     unsigned int num_packets_exp = 8;
@@ -171,7 +168,7 @@ Test(base_output, reconstruct02, .description="Function not given enough memory 
     // fill memory with "random" garbage
     srand(444);
     for (unsigned int i = 0; i < message_len; i++)
-        message_act[i] = (char)(rand() % 90 + 33);
+        message_act[i] = (char)(rand() % 90 + 35);
 
     reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
     char *message_exp = "There are two ways to write error-free programs; only the t";
@@ -196,7 +193,7 @@ Test(base_return, reconstruct02, .description="Function not given enough memory 
     // fill memory with "random" garbage
     srand(444);
     for (unsigned int i = 0; i < message_len; i++)
-        message_act[i] = (char)(rand() % 90 + 33);
+        message_act[i] = (char)(rand() % 90 + 35);
 
     unsigned int num_packets_act = reconstruct_sf((unsigned char **)packets, packets_len, message_act, message_len);
     unsigned int num_packets_exp = 5;
